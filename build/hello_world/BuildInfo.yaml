@@ -5,7 +5,7 @@ compiled_package_info:
     hello_world: "0000000000000000000000000000000000000000000000000000000000000000"
     std: "0000000000000000000000000000000000000000000000000000000000000001"
     sui: "0000000000000000000000000000000000000000000000000000000000000002"
-  source_digest: FFEA291DF44682CDD0AC956812ACE64321748299B84C7CAFACF1086B45A38E74
+  source_digest: 5C923E95EF2E4EDB0FCF6D417FCFB2257E48BE9F9FFC0B999BDBD7AA4F7B5C54
   build_flags:
     dev_mode: false
     test_mode: false
@@ -16,7 +16,7 @@ compiled_package_info:
     lock_file: "./Move.lock"
     additional_named_addresses: {}
     fetch_deps_only: false
-    skip_fetch_latest_git_deps: false
+    skip_fetch_latest_git_deps: true
     default_flavor: sui
     default_edition: ~
     deps_as_root: false
