@@ -1,7 +1,8 @@
 module hello_world::transcript {
-    use sui::object::{Self, UID};
+    use sui::object::{Self, ID, UID};
     use sui::tx_context::{Self, TxContext};
     use sui::transfer;
+    use sui::event;
 
     struct TranscriptObject has key {
         id: UID,
@@ -28,6 +29,18 @@ module hello_world::transcript {
         id: UID,
     }
 
+    // Events
+    /// Event marking when a transcript has been requested
+    struct TranscriptRequestEvent has copy, drop {
+        // The Object ID of the transcript wrapper
+        wrapper_id: ID,
+        // The requester of the transcript
+        requester: address,
+        // The intended address of the transcript
+        intended_address: address,
+    }
+
+    // Errors
     const ENotIntendedAddress: u64 = 1;
 
     /// Module initializer is called only once on module publish.
@@ -49,6 +62,11 @@ module hello_world::transcript {
             transcript,
             intended_address
         };
+        event::emit(TranscriptRequestEvent {
+            wrapper_id: object::uid_to_inner(&folderObject.id),
+            requester: tx_context::sender(ctx),
+            intended_address,
+        });
         // We transfer the wrapped transcript object directly to the intended_address
         transfer::transfer(folderObject, intended_address)
     }
