@@ -23,7 +23,25 @@ module hello_world::transcript {
         intended_address: address
     }
 
+    // Type that marks the capability to create, update, and delete transcripts
+    struct TeacherCap has key {
+        id: UID,
+    }
+
     const ENotIntendedAddress: u64 = 1;
+
+    /// Module initializer is called only once on module publish.
+    fun init(ctx: &mut TxContext) {
+        transfer::transfer(TeacherCap {
+            id: object::new(ctx)
+        }, tx_context::sender(ctx))
+    }
+
+    public entry fun add_additional_teacher(_: &TeacherCap, new_teacher_address: address, ctx: &mut TxContext) {
+        transfer::transfer(TeacherCap {
+            id: object::new(ctx)
+        }, new_teacher_address)
+    }
 
     public entry fun request_transcript(transcript: WrappableTranscript, intended_address: address, ctx: &mut TxContext) {
         let folderObject = Folder {
@@ -48,7 +66,7 @@ module hello_world::transcript {
         object::delete(id)
     }
 
-    public entry fun create_transcript_object(history: u8, math: u8,literature: u8, ctx: &mut TxContext) {
+    public entry fun create_transcript_object(_: &TeacherCap, history: u8, math: u8,literature: u8, ctx: &mut TxContext) {
         let transcriptObject = TranscriptObject { id: object::new(ctx), history, math, literature};
         transfer::transfer(transcriptObject, tx_context::sender(ctx))
         // https://docs.sui.io/concepts/object-ownership/immutable#create-immutable-object
