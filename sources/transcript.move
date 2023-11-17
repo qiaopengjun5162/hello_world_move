@@ -10,13 +10,51 @@ module hello_world::transcript {
         literature: u8,
     }
 
+    struct WrappableTranscript has key, store {
+        id: UID,
+        history: u8,
+        math: u8,
+        literature: u8,
+    }
+
+    struct Folder has key {
+        id: UID,
+        transcript: WrappableTranscript,
+        intended_address: address
+    }
+
+    const ENotIntendedAddress: u64 = 1;
+
+    public entry fun request_transcript(transcript: WrappableTranscript, intended_address: address, ctx: &mut TxContext) {
+        let folderObject = Folder {
+            id: object::new(ctx),
+            transcript,
+            intended_address
+        };
+        // We transfer the wrapped transcript object directly to the intended_address
+        transfer::transfer(folderObject, intended_address)
+    }
+
+    public entry fun unpack_wrapped_transcript(folder: Folder, ctx: &mut TxContext) {
+        // Check that the person unpacking the transcript is the intended_address
+        assert!(folder.intended_address == tx_context::sender(ctx), ENotIntendedAddress);
+        let Folder {
+            id,
+            transcript,
+            intended_address: _,
+        } = folder;
+        transfer::transfer(transcript, tx_context::sender(ctx));
+        // Deletes the wrapper Folder object
+        object::delete(id)
+    }
+
     public entry fun create_transcript_object(history: u8, math: u8,literature: u8, ctx: &mut TxContext) {
         let transcriptObject = TranscriptObject { id: object::new(ctx), history, math, literature};
-        // transfer::transfer(transcriptObject, tx_context::sender(ctx))
+        transfer::transfer(transcriptObject, tx_context::sender(ctx))
         // https://docs.sui.io/concepts/object-ownership/immutable#create-immutable-object
         // transfer::freeze_object(transcriptObject);
         // https://docs.sui.io/concepts/object-ownership/shared
-        transfer::share_object(transcriptObject);
+        // transfer::share_object(transcriptObject);
     }
 
     // struct Transcript {
@@ -24,4 +62,17 @@ module hello_world::transcript {
     //     math: u8,
     //     literature: u8,
     // }
+
+    public fun view_score(transcriptObject: &TranscriptObject): u8 {
+        transcriptObject.literature
+    }
+
+    public entry fun update_score(transcriptObject: &mut TranscriptObject, score: u8) {
+        transcriptObject.literature = score
+    }
+
+    public entry fun delete_transcript(transcriptObject:  TranscriptObject) {
+        let TranscriptObject { id, history: _, math: _, literature: _ } = transcriptObject;
+        object::delete(id);
+    }
 }
